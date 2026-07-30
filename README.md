@@ -1,6 +1,6 @@
-# Stride Fitness Tracker
+# Trainer Ethan Fitness Tracker
 
-Stride is a responsive, multi-user physical activity tracker built with React,
+Trainer Ethan is a responsive, multi-user physical activity tracker built with React,
 Vinext, and Supabase.
 
 ## Features
