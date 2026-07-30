@@ -750,12 +750,26 @@ textarea::placeholder {
 }
 
 .activity-list article {
+  border-top: 1px solid var(--border);
+}
+
+.activity-summary {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) 90px auto;
+  width: 100%;
+  grid-template-columns: 58px minmax(0, 1fr) 90px 92px;
   align-items: center;
   gap: 18px;
   padding: 18px 4px;
-  border-top: 1px solid var(--border);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.activity-summary:hover,
+.activity-summary[aria-expanded="true"] {
+  background: rgba(34, 211, 238, 0.055);
 }
 
 .activity-date {
@@ -782,20 +796,20 @@ textarea::placeholder {
   min-width: 0;
 }
 
-.activity-details h3,
-.activity-details p {
+.activity-details strong,
+.activity-details small {
+  display: block;
   overflow: hidden;
-  margin: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.activity-details h3 {
+.activity-details strong {
   margin-bottom: 5px;
   font-size: 0.96rem;
 }
 
-.activity-details p {
+.activity-details small {
   color: var(--muted);
   font-size: 0.8rem;
 }
@@ -809,8 +823,49 @@ textarea::placeholder {
   font-size: 1.2rem;
 }
 
+.activity-toggle {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.activity-expanded {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 4px 18px 80px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input);
+}
+
+.activity-note {
+  min-width: 0;
+}
+
+.activity-note > span {
+  color: var(--dim);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.activity-note p {
+  margin: 7px 0 0;
+  color: #c4cfde;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .row-actions {
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
 }
 
@@ -940,16 +995,23 @@ textarea::placeholder {
     display: none;
   }
 
-  .activity-list article {
+  .activity-summary {
     grid-template-columns: 48px 1fr auto;
+    gap: 12px;
   }
 
   .activity-duration {
     text-align: right;
   }
 
-  .row-actions {
+  .activity-toggle {
     grid-column: 2 / -1;
+    text-align: left;
+  }
+
+  .activity-expanded {
+    margin-left: 60px;
+    flex-direction: column;
   }
 
   .leaderboard button {
