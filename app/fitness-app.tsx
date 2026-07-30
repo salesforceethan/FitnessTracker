@@ -276,32 +276,58 @@ function Dashboard({ user }: { user: User }) {
   async function loadData() {
     if (!supabase) return;
     setError("");
+    setLoading(true);
     const start = new Date();
     start.setDate(start.getDate() - 60);
 
-    const [profileResult, activityResult] = await Promise.all([
-      supabase.from("profiles").select("id, display_name").order("display_name"),
-      supabase
-        .from("activities")
-        .select(
-          "id, user_id, activity_date, activity_type, duration_minutes, comment, created_at",
-        )
-        .gte("activity_date", dateKey(start))
-        .order("activity_date", { ascending: false })
-        .order("created_at", { ascending: false }),
-    ]);
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const [profileResult, activityResult] = await Promise.all([
+        supabase.from("profiles").select("id, display_name").order("display_name"),
+        supabase
+          .from("activities")
+          .select(
+            "id, user_id, activity_date, activity_type, duration_minutes, comment, created_at",
+          )
+          .gte("activity_date", dateKey(start))
+          .order("activity_date", { ascending: false })
+          .order("created_at", { ascending: false }),
+      ]);
 
-    if (profileResult.error || activityResult.error) {
+      const queryError = profileResult.error ?? activityResult.error;
+      if (!queryError) {
+        setProfiles(profileResult.data ?? []);
+        setActivities(activityResult.data ?? []);
+        setNotice((current) =>
+          current === "Secure session is syncing. Retrying automatically…"
+            ? ""
+            : current,
+        );
+        setLoading(false);
+        return;
+      }
+
+      const isClockSkew = queryError.message
+        .toLowerCase()
+        .includes("jwt issued at future");
+
+      if (isClockSkew && attempt < 3) {
+        setNotice("Secure session is syncing. Retrying automatically…");
+        await new Promise((resolve) =>
+          window.setTimeout(resolve, 2_000 * (attempt + 1)),
+        );
+        await supabase.auth.refreshSession();
+        continue;
+      }
+
+      setNotice("");
       setError(
-        profileResult.error?.message ??
-          activityResult.error?.message ??
-          "Unable to load activity data.",
+        isClockSkew
+          ? "Your secure session is still syncing. Wait a moment, then refresh the page."
+          : queryError.message || "Unable to load activity data.",
       );
-    } else {
-      setProfiles(profileResult.data ?? []);
-      setActivities(activityResult.data ?? []);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
   }
 
   useEffect(() => {
