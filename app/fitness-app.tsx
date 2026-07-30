@@ -268,6 +268,9 @@ function Dashboard({ user }: { user: User }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [expandedActivityId, setExpandedActivityId] = useState<number | null>(
+    null,
+  );
   const [activityDate, setActivityDate] = useState(dateKey(new Date()));
   const [activityType, setActivityType] = useState("");
   const [duration, setDuration] = useState("");
@@ -398,9 +401,9 @@ function Dashboard({ user }: { user: User }) {
     [profiles, activities, days],
   );
 
-  const ownActivities = activities
-    .filter((activity) => activity.user_id === user.id)
-    .slice(0, 8);
+  const selectedActivities = activities
+    .filter((activity) => activity.user_id === selectedUserId)
+    .slice(0, 12);
   const ownRangeActivities = activities.filter(
     (activity) =>
       activity.user_id === user.id && activity.activity_date >= days[0],
@@ -467,6 +470,11 @@ function Dashboard({ user }: { user: User }) {
     setDuration(String(activity.duration_minutes));
     setComment(activity.comment ?? "");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function selectUser(userId: string) {
+    setSelectedUserId(userId);
+    setExpandedActivityId(null);
   }
 
   async function deleteActivity(id: number) {
@@ -713,7 +721,7 @@ function Dashboard({ user }: { user: User }) {
                         selectedUserId === profile.id ? "selected" : ""
                       }
                       key={profile.id}
-                      onClick={() => setSelectedUserId(profile.id)}
+                      onClick={() => selectUser(profile.id)}
                       type="button"
                     >
                       <span className="rank">{index + 1}</span>
@@ -737,51 +745,89 @@ function Dashboard({ user }: { user: User }) {
         <section className="panel history-panel">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">Your latest sessions</p>
-              <h2>Activity history</h2>
+              <p className="eyebrow">
+                {selectedUserId === user.id
+                  ? "Your latest sessions"
+                  : `${selectedName}'s latest sessions`}
+              </p>
+              <h2>Activity details</h2>
             </div>
+            <span className="range-caption">Click an activity to view notes</span>
           </div>
 
-          {ownActivities.length === 0 ? (
+          {selectedActivities.length === 0 ? (
             <p className="empty-copy">
-              Nothing logged yet. Your first session starts the momentum.
+              {selectedUserId === user.id
+                ? "Nothing logged yet. Your first session starts the momentum."
+                : `${selectedName} has not logged an activity yet.`}
             </p>
           ) : (
             <div className="activity-list">
-              {ownActivities.map((activity) => (
+              {selectedActivities.map((activity) => {
+                const isExpanded = expandedActivityId === activity.id;
+                const detailsId = `activity-details-${activity.id}`;
+                return (
                 <article key={activity.id}>
-                  <div className="activity-date">
-                    <strong>
-                      {parseDate(activity.activity_date).getDate()}
-                    </strong>
-                    <span>
-                      {new Intl.DateTimeFormat("en-US", {
-                        month: "short",
-                      }).format(parseDate(activity.activity_date))}
+                  <button
+                    className="activity-summary"
+                    type="button"
+                    aria-expanded={isExpanded}
+                    aria-controls={detailsId}
+                    onClick={() =>
+                      setExpandedActivityId(isExpanded ? null : activity.id)
+                    }
+                  >
+                    <span className="activity-date">
+                      <strong>
+                        {parseDate(activity.activity_date).getDate()}
+                      </strong>
+                      <span>
+                        {new Intl.DateTimeFormat("en-US", {
+                          month: "short",
+                        }).format(parseDate(activity.activity_date))}
+                      </span>
                     </span>
-                  </div>
-                  <div className="activity-details">
-                    <h3>{activity.activity_type}</h3>
-                    <p>{activity.comment || "No session notes"}</p>
-                  </div>
-                  <div className="activity-duration">
-                    <strong>{activity.duration_minutes}</strong>
-                    <span>minutes</span>
-                  </div>
-                  <div className="row-actions">
-                    <button onClick={() => beginEdit(activity)} type="button">
-                      Edit
-                    </button>
-                    <button
-                      className="danger"
-                      onClick={() => deleteActivity(activity.id)}
-                      type="button"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                    <span className="activity-details">
+                      <strong>{activity.activity_type}</strong>
+                      <small>{formatDate(activity.activity_date)}</small>
+                    </span>
+                    <span className="activity-duration">
+                      <strong>{activity.duration_minutes}</strong>
+                      <span>minutes</span>
+                    </span>
+                    <span className="activity-toggle">
+                      {isExpanded ? "Hide details" : "View details"}
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="activity-expanded" id={detailsId}>
+                      <div className="activity-note">
+                        <span>Activity notes</span>
+                        <p>{activity.comment || "No notes were added."}</p>
+                      </div>
+                      {selectedUserId === user.id && (
+                        <div className="row-actions">
+                          <button
+                            onClick={() => beginEdit(activity)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="danger"
+                            onClick={() => deleteActivity(activity.id)}
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </article>
-              ))}
+              );
+              })}
             </div>
           )}
         </section>
