@@ -21,9 +21,12 @@ type Activity = {
 type AuthMode = "signin" | "signup";
 type Range = 7 | 30;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
+  "https://ofgprrvnvtxoizdonbqp.supabase.co";
 const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  "sb_publishable_l3mx_2UjIZXLzb7scQ7RiA_pmY0oOzZ";
 const supabase =
   supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
