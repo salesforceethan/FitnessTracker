@@ -115,7 +115,7 @@ export default function FitnessApp() {
   if (loadingSession) {
     return (
       <main className="center-shell">
-        <div className="loader" aria-label="Loading Stride" />
+        <div className="loader" aria-label="Loading Trainer Ethan" />
       </main>
     );
   }
@@ -792,8 +792,8 @@ function Dashboard({ user }: { user: User }) {
 
 function Brand() {
   return (
-    <div className="brand" aria-label="Stride fitness tracker">
-      Stride<span>.</span>
+    <div className="brand" aria-label="Trainer Ethan fitness tracker">
+      Trainer Ethan<span>.</span>
     </div>
   );
 }
